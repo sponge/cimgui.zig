@@ -43,6 +43,7 @@ pub const Renderer = enum {
     opengl3,
     sdlgpu3,
     vulkan,
+    sdlrenderer3,
 };
 
 pub const Platform = enum {
@@ -230,6 +231,20 @@ pub fn buildBackends(pkg_builder: *VerboseBuilder, lib: *std.Build.Step.Compile,
                     pkg_builder.addCSource(lib, &.{ "dcimgui", branch_dir, "backends", "dcimgui_impl_sdlgpu3.cpp" }, flags.items);
                     pkg_builder.installHeader(lib, &.{ "dcimgui", branch_dir, "backends", "imgui_impl_sdlgpu3.h" }, &.{ "backends", "imgui_impl_sdlgpu3.h" });
                     pkg_builder.installHeader(lib, &.{ "dcimgui", branch_dir, "backends", "dcimgui_impl_sdlgpu3.h" }, &.{ "backends", "dcimgui_impl_sdlgpu3.h" });
+                }
+            },
+            .sdlrenderer3 => {
+                if (pkg_builder.dependencyLazy("sdl")) |sdl_dep| {
+                    sdl_artifact = pkg_builder.artifact(sdl_dep, "SDL3");
+                    sdl_dep_fetched = true;
+
+                    pkg_builder.linkLibrary(lib, sdl_artifact);
+                    pkg_builder.installLibraryHeaders(lib, sdl_artifact);
+
+                    pkg_builder.addCSource(lib, &.{ "dcimgui", branch_dir, "backends", "imgui_impl_sdlrenderer3.cpp" }, flags.items);
+                    pkg_builder.addCSource(lib, &.{ "dcimgui", branch_dir, "backends", "dcimgui_impl_sdlrenderer3.cpp" }, flags.items);
+                    pkg_builder.installHeader(lib, &.{ "dcimgui", branch_dir, "backends", "imgui_impl_sdlrenderer3.h" }, &.{ "backends", "imgui_impl_sdlrenderer3.h" });
+                    pkg_builder.installHeader(lib, &.{ "dcimgui", branch_dir, "backends", "dcimgui_impl_sdlrenderer3.h" }, &.{ "backends", "dcimgui_impl_sdlrenderer3.h" });
                 }
             },
             .metal => {
